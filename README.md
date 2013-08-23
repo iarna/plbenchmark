@@ -84,6 +84,12 @@ timings on your benchmark.
 Todo
 ----
 
+Node execution time for the first benchmark is noticibly slower for low CPU
+cases then running the same benchmark later, so:
+
+    * Either we need to do the shuffling/clumping of node-bench
+    * Or we need to run more warm-up rounds
+
 Add support for time rather then count based benchmarking ala negative
 numbers with `cpan/Benchmark` and default behavior with `npm/bench`.
 
