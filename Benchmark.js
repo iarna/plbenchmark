@@ -98,18 +98,18 @@ exports.timethese = function(count,todo,header,report,complete) {
     var todo_labels = Object.keys(todo);
     header( count, todo_labels );
     var results = {};
-    var testiter = function(testno) {
-        var todo_label = todo_labels[testno];
-        if (testno >= todo_labels.length) return complete(count,results);
+    var benchiter = function(benchno) {
+        var todo_label = todo_labels[benchno];
+        if (benchno >= todo_labels.length) return complete(count,results);
         var todo_func = todo[todo_label];
-        var summarizetest = function () {
+        var summarizebench = function () {
             report(count,todo_label,results[todo_label]);
-            testiter(testno+1);
+            benchiter(benchno+1);
         };
         exports.timethis(count, todo_func, function(result) {
             results[todo_label] = result;
-            setImmediate(summarizetest);
+            setImmediate(summarizebench);
         });
     }
-    testiter(0);
+    benchiter(0);
 }
