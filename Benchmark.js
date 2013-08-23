@@ -1,4 +1,4 @@
-var sprintf = require("sprintf-js").sprintf;
+var sprintf = require('sprintf').sprintf;
 var proc = require('getrusage');
 
 var nullfunc = function(){};
