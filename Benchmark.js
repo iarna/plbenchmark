@@ -1,12 +1,11 @@
 var sprintf = require('sprintf').sprintf;
 var proc = require('getrusage');
 
-var nullfunc = function(){};
-var nullasyncrun = function(done){done()};
-var nullruncache = {sync:{},async:{}};
-
-var timer = {
-    reset: function () { this.wall = [0,0]; this.usr = this.sys = 0 },
+function Timer() {
+    this.wall = [0,0];
+    this.usr = this.sys = 0;
+}
+Timer.prototype = {
     start: function () {
         var usage = proc.usage();
         this.started = { wall: process.hrtime(), usr: usage.utime, sys: usage.stime };
@@ -32,57 +31,58 @@ var timer = {
     }
 };
 
-exports.timethis_sync = function(count,todo,result) {
-    var timeit = function (nullrun) {
+var donothing = function(){};
+var nullruncache = {sync:{},async:{}};
+
+var timeit = {
+    sync: function (count,todo,result) {
         todo(); // once to prime the cache
-        timer.reset();
+        var timer = new Timer();
         timer.start();
         for (var i=0; i<count; ++i) {
             todo();
         }
         timer.pause();
-        result(timer.get(nullrun));
-    };
-    if ( nullruncache.sync[count] ) {
-        timeit( nullruncache.sync[count] );
-    }
-    else {
-        nullruncache.sync[count] = {wall:0,usr:0,sys:0};
-        exports.timethese(count,{nullrun:nullfunc},nullfunc,nullfunc,
-            function (count,results) {
-                timeit( nullruncache.sync[count] = results['nullrun'] );
-            });
-    }
-}
-exports.timethis_async = function(count,todo,result) {
-    var timeit = function (nullrun) {
+        result(timer);
+    },
+    async: function (count,todo,result) {
         var i = 0;
-        timer.reset();
+        var timer = new Timer();
         var runtest = function(){
             timer.start();
             todo(completetest);
         };
         var completetest = function () {
             timer.pause();
-            if (i++ < count ) {
+            if (++i < count ) {
                 setImmediate(runtest);
             }
             else {
-                result(timer.get(nullrun));
+                result(timer);
             }
         }
-        todo(runtest); // once to prime the cache
-    };
-    if ( nullruncache.async[count] ) {
-        timeit( nullruncache.async[count] );
+        // This runs it once without timing information in order to prime
+        // the cache.
+        todo(runtest);
+    }
+};
+exports.timethis = function(count,todo,result) {
+    var nullbench;
+    var sora;
+    if ( todo.length == 0 ) {
+        sora = 'sync';
+        nullbench = donothing;
     }
     else {
-        nullruncache.async[count] = {wall:0,usr:0,sys:0};
-        exports.timethese( count, {nullrun:nullasyncrun}, nullfunc, nullfunc,
-            function (count,results) {
-                timeit( nullruncache.async[count] = results['nullrun'] );
-            });
+        sora = 'async';
+        nullbench = function(done){done()};
     }
+    timeit[sora]( count, nullbench, function (timer) {
+        var nulltimings = timer.get();
+        timeit[sora]( count, todo, function (timer) {
+            result(timer.get(nulltimings));
+        });
+    });
 }
 
 exports.timethese = function(count,todo,header,report,complete) {
@@ -106,18 +106,10 @@ exports.timethese = function(count,todo,header,report,complete) {
             report(count,todo_label,results[todo_label]);
             testiter(testno+1);
         };
-        if (todo_func.length==0) {
-            exports.timethis_sync(count, todo_func, function(result) {
-                results[todo_label] = result;
-                setImmediate(summarizetest);
-            });
-        }
-        else {
-            exports.timethis_async(count, todo_func, function(result) {
-                results[todo_label] = result;
-                setImmediate(summarizetest);
-            });
-        }
+        exports.timethis(count, todo_func, function(result) {
+            results[todo_label] = result;
+            setImmediate(summarizetest);
+        });
     }
     testiter(0);
 }
