@@ -14,29 +14,27 @@ Usage
 With synchronous benchmarking targets:
 
     timethese( 1000, {
-            Name1: function () { ...code... },
-            Name2: function () { ...code... }
-        },
-        function onStart(count,labels) { ... }, 
-        function onOneComplete(count,label,result) { ... } ,
-        function onAllComplete(count,results) { ... });
+        Name1: function () { ...code... },
+        Name2: function () { ...code... }
+    });
 
 With async targets:
 
     timethese( 1000, {
-            Name1: function (done) { ...code...; done() },
-            Name2: function (done) { ...code...; done() },
-        },
-        function onStart(count,labels) { ... }, 
-        function onOneComplete(count,label,result) { ... } ,
-        function onAllComplete(count,results) { ... });
+        Name1: function (done) { ...code...; done() },
+        Name2: function (done) { ...code...; done() },
+    });
 
 You can mix and match sync and async targets.
 
 You can also time a single function with:
 
     var timethis = require('plbenchmark').timethis;
-    timethis( 1000, function toBenchmark() { ...code... }, function onResult(result) { ... });
+    // sync
+    timethis( 1000, function () { ...code... }, function onResult(result) { ... });
+    // async
+    timethis( 1000, function (done) { ...code...; done() }, function onResult(result) { ... });
+
 
 Exported Functions
 ------------------
