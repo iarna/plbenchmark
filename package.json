@@ -1,0 +1,15 @@
+{
+  "name": "plbenchmark",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "sprintf": "~0.1.1",
+    "getrusage": "~0.3.3"
+  },
+  "main": "Benchmark.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/iarna/plbenchmark.git"
+  },
+  "license": "BSD"
+}
